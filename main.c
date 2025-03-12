@@ -10,6 +10,26 @@ void print_macierz(int **macierz,int rozmiar){
         printf("\n");
     }
 }
+void dfs(int wierzcholek,int *odwiedzone,int n,int **graf){
+    odwiedzone[wierzcholek] = 1;
+    for(int i = 0; i < n ; i++){
+        if(graf[wierzcholek][i] == 1 && odwiedzone[i] == 0){ //Jeśli jest krawędź i wierzchołek jeszcze nie został odwiedzona
+            dfs(i,odwiedzone,n,graf);
+        }
+    }
+}
+int policz_graf(int n,int **graf){
+    int *odwiedzone = (int*)calloc(n,sizeof(int));
+    int licznik = 0;
+
+    for(int i = 0;i < n; i++){
+        if(odwiedzone[i] == 0){
+            licznik += 1;
+            dfs(i,odwiedzone,n,graf);
+        }
+    }
+    return licznik;
+}
 void przetwarzanie_grafu(FILE *plik,int ***graf,int *n){
     char linia[1024];
     int rozmiar = 0;
@@ -49,6 +69,7 @@ int main(int argc, char *argv[]){
     char nazwa_pliku[30];
     int liczba_wierzcholkow = 0;
     int margines_procentowy;
+    int liczba_subgrafow;
     if (argc<3){
         printf("Nie podano prawidlowych argumentow!\n");
         return 1;
@@ -61,5 +82,9 @@ int main(int argc, char *argv[]){
     przetwarzanie_grafu(plik,&graf,&liczba_wierzcholkow);
     fclose(plik);
     print_macierz(graf,liczba_wierzcholkow);
+
+    liczba_subgrafow = policz_graf(8,graf);
+
+    printf("Liczba oddzielnych grafow wynosi %d\n",liczba_subgrafow); //Działa bez zarzutu bo jest wierzchołek 0 który nie jest z niczym połączony
     return 0;
 }
