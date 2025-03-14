@@ -24,33 +24,6 @@ void dfs(int wierzcholek, int *odwiedzone, int n, int **graf)
         }
     }
 }
-void dfs_skladowe(int wierzcholek, int *ktora_skladowa, int **graf, int n, int nr_skladowej)
-{
-    ktora_skladowa[wierzcholek] = nr_skladowej;
-    for (int i = 0; i < n; i++)
-    {
-        if (graf[wierzcholek][i] == 1 && ktora_skladowa[i] == -1)
-        {
-            dfs_skladowe(i, ktora_skladowa, graf, n, nr_skladowej);
-        }
-    }
-}
-int *znajdz_spojne_skladowe(int **graf, int n)
-{
-    int *ktora_skladowa = malloc(n * sizeof(int));
-    memset(ktora_skladowa, -1, n * sizeof(int));
-    int nr_skladowej = 1;
-
-    for (int i = 0; i < n; i++)
-    {
-        if (ktora_skladowa[i] == -1)
-        {
-            dfs_skladowe(i, ktora_skladowa, graf, n, nr_skladowej);
-            nr_skladowej++;
-        }
-    }
-    return ktora_skladowa;
-}
 int policz_graf(int n, int **graf)
 {
     int *odwiedzone = (int *)calloc(n, sizeof(int));
