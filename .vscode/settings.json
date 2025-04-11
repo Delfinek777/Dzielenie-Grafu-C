@@ -3,6 +3,7 @@
         "string.h": "c",
         "stdlib.h": "c",
         "dzielenie.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "math.h": "c"
     }
 }
