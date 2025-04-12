@@ -182,22 +182,3 @@ void dzielenie_grafu(int **graf, int n, int margines_procentowy, int max_przecie
     free(usuniete_krawedzie);
 }
 
-void znajdowanie_mostow(int **graf, int n, int margines_procentowy, int liczba_przeciec)
-{
-    int skladowe_przed_usunieciem = ile_spojnych_skladowych(graf, n);
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = i + 1; j < n; j++)
-        {
-            if (czy_polaczone(i, j, graf))
-            {
-                int skladowe_po = ile_spojnych_skladowych(graf, n);
-                if (skladowe_przed_usunieciem + 1 == skladowe_po)
-                {
-                    printf("Mostem jest połączenie między %d i %d\n", i, j);
-                    //dzielenie_grafu(graf, n, margines_procentowy, liczba_przeciec);
-                }
-            }
-        }
-    }
-}

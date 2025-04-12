@@ -2,17 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "dzielenie.h"
-void print_macierz(int **macierz, int rozmiar)
-{
-    for (int i = 0; i < rozmiar; i++)
-    {
-        for (int j = 0; j < rozmiar; j++)
-        {
-            printf("%d ", macierz[i][j]);
-        }
-        printf("\n");
-    }
-}
+#include "pliki.h"
 void dfs(int wierzcholek, int *odwiedzone, int n, int **graf)
 {
     odwiedzone[wierzcholek] = 1;
@@ -108,7 +98,8 @@ int main(int argc, char *argv[])
         printf("Nie podano prawidlowych argumentow!\n");
         return 1;
     }
-    if (argc >= 3){
+    if (argc >= 3)
+    {
         liczba_przeciec = atoi(argv[3]);
     }
     strcpy(nazwa_pliku, argv[1]);
@@ -118,15 +109,15 @@ int main(int argc, char *argv[])
 
     przetwarzanie_grafu(plik, &graf, &liczba_wierzcholkow);
     fclose(plik);
-    print_macierz(graf, liczba_wierzcholkow);
+    wypisz_macierz_sasiedztwa(graf, liczba_wierzcholkow);
 
     liczba_subgrafow = policz_graf(8, graf);
 
     printf("Liczba oddzielnych grafow wynosi %d\n", liczba_subgrafow); // Działa bez zarzutu bo jest wierzchołek 0 który nie jest z niczym połączony
-    printf("Liczba wierzcholkow w grafie wynosi %d\n",liczba_wierzcholkow);
-    printf("Margines procentowy wynosi %d\n",margines_procentowy);
-    printf("Liczba przeciec wynosi %d\n",liczba_przeciec);
-    dzielenie_grafu(graf,liczba_wierzcholkow,margines_procentowy,liczba_przeciec);
-    
+    printf("Liczba wierzcholkow w grafie wynosi %d\n", liczba_wierzcholkow);
+    printf("Margines procentowy wynosi %d\n", margines_procentowy);
+    printf("Liczba przeciec wynosi %d\n", liczba_przeciec);
+    dzielenie_grafu(graf, liczba_wierzcholkow, margines_procentowy, liczba_przeciec);
+
     return 0;
 }
