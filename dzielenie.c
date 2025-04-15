@@ -30,8 +30,9 @@ int czy_podgraf_spojny(int **graf, Podgraf *p, int n) {
     return 1;
 }
 
-void wypisz_przeciete_krawedzie(int **graf, Podgraf *A, Podgraf *B) {
-    printf("Przeciete krawedzie:\n");
+void wypisz_przeciete_krawedzie(int **graf, Podgraf *A, Podgraf *B,FILE *output) {
+    printf("\nPrzeciete krawedzie:\n");
+    fprintf(output,"\nPrzeciete krawedzie:\n");
     int licznik = 0;
     
     for (int i = 0; i < A->rozmiar; i++) {
@@ -40,6 +41,7 @@ void wypisz_przeciete_krawedzie(int **graf, Podgraf *A, Podgraf *B) {
             int v = B->wierzcholki[j];
             if (graf[u][v] == 1) {
                 printf("%d -- %d\n", u, v);
+                fprintf(output,"%d -- %d\n", u, v);
                 licznik++;
             }
         }
@@ -47,12 +49,14 @@ void wypisz_przeciete_krawedzie(int **graf, Podgraf *A, Podgraf *B) {
     
     if (licznik == 0) {
         printf("Brak krawedzi do przecięcia\n");
+        fprintf(output,"Brak krawedzi do przecięcia\n");
     } else {
         printf("Lacznie przecieto %d krawedzi\n", licznik);
+        fprintf(output,"Lacznie przecieto %d krawedzi\n", licznik);
     }
 }
 
-void podziel_graf_iteracyjnie(int **graf, int n, int max_podgrafow, int max_margines) {
+void podziel_graf_iteracyjnie(int **graf, int n, int max_podgrafow, int max_margines,FILE *output) {
     Podgraf *podgrafy = (Podgraf *)calloc(max_podgrafow, sizeof(Podgraf));
     int aktualna_liczba_podgrafow = 1;
     
@@ -76,6 +80,7 @@ void podziel_graf_iteracyjnie(int **graf, int n, int max_podgrafow, int max_marg
 
         if (najwiekszy_idx == -1) {
             printf("Nie mozna znalezc odpowiedniego podgrafu do podzialu\n");
+            fprintf(output,"Nie mozna znalezc odpowiedniego podgrafu do podzialu\n");
             break;
         }
 
@@ -127,6 +132,7 @@ void podziel_graf_iteracyjnie(int **graf, int n, int max_podgrafow, int max_marg
         // Sprawdź warunki
         if (B->rozmiar == 0 || !czy_podgraf_spojny(graf, B, n)) {
             printf("Nie udalo sie znalezc odpowiedniego podgrafu do podzialu\n");
+            fprintf(output,"Nie udalo sie znalezc odpowiedniego podgrafu do podzialu\n");
             free(B->wierzcholki);
             continue;
         }
@@ -134,12 +140,13 @@ void podziel_graf_iteracyjnie(int **graf, int n, int max_podgrafow, int max_marg
         double margines = oblicz_margines(A->rozmiar, B->rozmiar);
         if (margines > max_margines) {
             printf("Margines %.2f%% przekracza dopuszczalny %d%%\n", margines, max_margines);
+            fprintf(output,"Margines %.2f%% przekracza dopuszczalny %d%%\n", margines, max_margines);
             free(B->wierzcholki);
             continue;
         }
         
         // Wypisz informacje o przeciętych krawędziach
-        wypisz_przeciete_krawedzie(graf, A, B);
+        wypisz_przeciete_krawedzie(graf, A, B,output);
         
         // Odłącz krawędzie między podgrafami
         for (int i = 0; i < A->rozmiar; i++) {
@@ -157,17 +164,28 @@ void podziel_graf_iteracyjnie(int **graf, int n, int max_podgrafow, int max_marg
         printf("- Podgraf %d: %d wierzcholkow\n", aktualna_liczba_podgrafow, B->rozmiar);
         printf("Margines: %.2f%%\n", margines);
         
+        fprintf(output,"Podzielono podgraf %d na:\n", najwiekszy_idx);
+        fprintf(output,"- Podgraf %d: %d wierzcholkow\n", najwiekszy_idx, A->rozmiar);
+        fprintf(output,"- Podgraf %d: %d wierzcholkow\n", aktualna_liczba_podgrafow, B->rozmiar);
+        fprintf(output,"Margines: %.2f%%\n", margines);
+
+
+
         aktualna_liczba_podgrafow++;
     }
     
     // Sprawdź spójność ostatecznych podgrafów
     printf("\nOstateczny podzial:\n");
+    fprintf(output,"\nOstateczny podzial:\n");
     for (int i = 0; i < aktualna_liczba_podgrafow; i++) {
         printf("Podgraf %d (%d wierzcholkow): ", i, podgrafy[i].rozmiar);
+        fprintf(output,"Podgraf %d (%d wierzcholkow): ", i, podgrafy[i].rozmiar);
         for (int j = 0; j < podgrafy[i].rozmiar; j++) {
             printf("%d ", podgrafy[i].wierzcholki[j]);
+            fprintf(output,"%d ", podgrafy[i].wierzcholki[j]);
         }
         printf(czy_podgraf_spojny(graf, &podgrafy[i], n) ? "[spojny]\n" : "[NIESPOJNY]\n");
+        fprintf(output,czy_podgraf_spojny(graf, &podgrafy[i], n) ? "[spojny]\n" : "[NIESPOJNY]\n");
     }
     
     // Zwolnij pamięć
@@ -177,9 +195,11 @@ void podziel_graf_iteracyjnie(int **graf, int n, int max_podgrafow, int max_marg
     free(podgrafy);
 }
 
-void dzielenie_grafu(int **graf, int n, int margines_procentowy, int docelowa_liczba_podgrafow) {
+void dzielenie_grafu(int **graf, int n, int margines_procentowy, int docelowa_liczba_podgrafow,FILE *output) {
     printf("\nRozpoczynanie dzielenia grafu na %d czesci z marginesem %d%%\n", 
            docelowa_liczba_podgrafow, margines_procentowy);
+    fprintf(output,"Rozpoczynanie dzielenia grafu na %d czesci z marginesem %d%%\n", 
+           docelowa_liczba_podgrafow, margines_procentowy);
     
-    podziel_graf_iteracyjnie(graf, n, docelowa_liczba_podgrafow, margines_procentowy);
+    podziel_graf_iteracyjnie(graf, n, docelowa_liczba_podgrafow, margines_procentowy,output);
 }
