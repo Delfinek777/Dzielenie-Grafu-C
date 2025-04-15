@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "dzielenie.h"
 #include <math.h>
 #include <stdbool.h>
-
+#include <unistd.h>
+#include "dzielenie.h"
+#include "pliki.h"
 void dfs(int wierzcholek, int *odwiedzone, int n, int **graf)
 {
     odwiedzone[wierzcholek] = 1;
@@ -99,28 +100,53 @@ void przetwarzanie_grafu(FILE *plik, int ***graf, int *n)
         }
     }
 }
-
 int main(int argc, char *argv[])
 {
-    if (argc < 4)
-    {
-        printf("Sposób użycia: %s <plik_z_grafem> <margines_procentowy> <docelowa_liczba_podgrafow>\n", argv[0]);
-        printf("Przykład: %s graf.txt 30 3\n", argv[0]);
-        return 1;
-    }
+    // domyslne parametry
+    char *input_plik = NULL;
+    char *output_plik = NULL;
+    int margines_procentowy = 10;
+    int docelowa_liczba_podgrafow = 2;
+    int czy_terminal=0;
+    int czy_binarny=0;
 
-    // Wczytanie parametrów
-    char *nazwa_pliku = argv[1];
-    int margines_procentowy = atoi(argv[2]);
-    int docelowa_liczba_podgrafow = atoi(argv[3]);
-
-    // Wczytanie grafu z pliku
-    FILE *plik = fopen(nazwa_pliku, "r");
-    if (!plik)
-    {
-        printf("Nie można otworzyć pliku %s\n", nazwa_pliku);
-        return 1;
+    int opt; 
+    while ((opt = getopt(argc, argv, "n:m:o:tb")) != -1)  //n: to oczekujemy czegos po n, jak nie ma dwukropka to niczego
+    { 
+        switch(opt) {
+            case 'n':
+                docelowa_liczba_podgrafow = atoi(optarg);
+                break;
+            case 'm':
+                margines_procentowy = atoi(optarg);
+                break;
+            case 'o':
+                output_plik = strdup(optarg);
+                break;
+            case 't':
+                czy_terminal = 1;
+                break;
+            case 'b':
+                czy_binarny = 1;
+                break;
+        }
     }
+    if (optind >= argc) {
+        fprintf(stderr, "Nie podano pliku wejściowego!\n");
+        exit(EXIT_FAILURE);
+    }
+    // domyślny plik wyjściowy jeśli nie ma -t ani -o
+    if (!czy_terminal && output_plik == NULL) {
+        output_plik = strdup("wynik.txt");
+    }
+    
+    input_plik= argv[optind];
+    FILE *plik = fopen(input_plik, "r");
+    if (plik == NULL) {
+        perror("Błąd przy otwieraniu pliku wejściowego");
+        exit(EXIT_FAILURE);
+    }
+    
 
     int liczba_wierzcholkow;
     int **graf = NULL;
@@ -144,6 +170,10 @@ int main(int argc, char *argv[])
         free(graf[i]);
     }
     free(graf);
+    if (output_plik) {
+        free(output_plik);
+    }
+    
 
     return 0;
 }
