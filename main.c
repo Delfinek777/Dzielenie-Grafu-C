@@ -87,7 +87,7 @@ int policz_graf(int n, int **graf)
 
 
 //     //exit(1);
-//     // *graf = (int **)calloc(rozmiar, sizeof(int *));
+//  a   // *graf = (int **)calloc(rozmiar, sizeof(int *));
 
 //     // for (int i = 0; i < rozmiar; i++)
 //     // {
