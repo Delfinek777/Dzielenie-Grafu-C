@@ -1,0 +1,3 @@
+
+Rozpoczecie dzielenia grafu na 3 podzialow z marginesem 30%
+Poczatkowa liczba spojnych skladowych: 4
