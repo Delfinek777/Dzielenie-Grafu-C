@@ -82,29 +82,25 @@ int policz_graf(int n, int **graf)
 //     *n = rozmiar;
 //     printf("Rozmiar = %d \n", rozmiar);
 
-    
 
+//     *graf = (int **)calloc(rozmiar, sizeof(int *));
 
-
-//     //exit(1);
-//  a   // *graf = (int **)calloc(rozmiar, sizeof(int *));
-
-//     // for (int i = 0; i < rozmiar; i++)
-//     // {
-//     //     (*graf)[i] = (int *)calloc(rozmiar, sizeof(int));
-//     // }
-//     // // 2.
-//     // for (int i = 0; i < rozmiar; i++)
-//     // {
-//     //     for (int j = 0; j < rozmiar; j++)
-//     //     {
-//     //         if (fscanf(plik, "%d", &(*graf)[i][j]) != 1)
-//     //         {
-//     //             printf("Wystapil blad w odczytywaniu pliku do grafu!\n");
-//     //             return;
-//     //         }
-//     //     }
-//     // }
+//     for (int i = 0; i < rozmiar; i++)
+//     {
+//         (*graf)[i] = (int *)calloc(rozmiar, sizeof(int));
+//     }
+//     // 2.
+//     for (int i = 0; i < rozmiar; i++)
+//     {
+//         for (int j = 0; j < rozmiar; j++)
+//         {
+//             if (fscanf(plik, "%d", &(*graf)[i][j]) != 1)
+//             {
+//                 printf("Wystapil blad w odczytywaniu pliku do grafu!\n");
+//                 return;
+//             }
+//         }
+//     }
 // }
 int main(int argc, char *argv[])
 {
@@ -175,8 +171,8 @@ int main(int argc, char *argv[])
     fclose(plik);
 
     // Wyświetlenie informacji początkowych
-    printf("\nWczytany graf (%d wierzchołków):\n", liczba_wierzcholkow);
-    print_macierz(graf, liczba_wierzcholkow);
+    printf("\nWczytany graf (%d wierzcholkow):\n", liczba_wierzcholkow);
+    //print_macierz(graf, liczba_wierzcholkow);
 
     printf("\nPoczatkowa liczba spojnych skladowych: %d\n", policz_graf(liczba_wierzcholkow, graf));
     printf("Docelowa liczba podgrafow: %d\n", docelowa_liczba_podgrafow);
