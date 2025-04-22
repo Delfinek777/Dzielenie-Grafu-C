@@ -4,15 +4,17 @@
 #include <math.h>
 #include "dzielenie.h"
 
-typedef struct {
-    int *wierzcholki;
-    int rozmiar;
-} Podgraf;
-
-typedef struct {
-    int u, v;
-} Krawedz;
-
+void dfs(int wierzcholek, int *odwiedzone, int n, int **graf)
+{
+    odwiedzone[wierzcholek] = 1;
+    for (int i = 0; i < n; i++)
+    {
+        if (graf[wierzcholek][i] == 1 && odwiedzone[i] == 0)
+        {
+            dfs(i, odwiedzone, n, graf);
+        }
+    }
+}
 double oblicz_margines(int a, int b) {
     if (a + b == 0) return 0.0; // Avoid division by zero
     return 2.0 * abs(a - b) / (a + b) * 100.0;

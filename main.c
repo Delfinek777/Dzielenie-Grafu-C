@@ -6,17 +6,6 @@
 #include <unistd.h>
 #include "dzielenie.h"
 #include "pliki.h"
-void dfs(int wierzcholek, int *odwiedzone, int n, int **graf)
-{
-    odwiedzone[wierzcholek] = 1;
-    for (int i = 0; i < n; i++)
-    {
-        if (graf[wierzcholek][i] == 1 && odwiedzone[i] == 0)
-        {
-            dfs(i, odwiedzone, n, graf);
-        }
-    }
-}
 void print_macierz(int **macierz, int rozmiar)
 {
     for (int i = 0; i < rozmiar; i++)
