@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include "dzielenie.h"
 #include "pliki.h"
+
 void print_macierz(int **macierz, int rozmiar)
 {
     for (int i = 0; i < rozmiar; i++)
@@ -143,7 +144,6 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-
     input_plik= argv[optind];
     FILE *plik = fopen(input_plik, "r");
     if (plik == NULL) {
@@ -179,7 +179,6 @@ int main(int argc, char *argv[])
     if (output_plik) {
         free(output_plik);
     }
-    
-
+   
     return 0;
 }
