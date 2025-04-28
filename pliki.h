@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void zbuduj_macierz_sasiedztwa(const char *nazwa_pliku, int ***macierz, int *n);
+void zbuduj_macierz_sasiedztwa(FILE *plik, int ***macierz, int *n);
 void wypisz_macierz_sasiedztwa(int **macierz, int n);
-
+void przetwarzanie_grafu(FILE *plik, int ***graf, int *n);
 #endif

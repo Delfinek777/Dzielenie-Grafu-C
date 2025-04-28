@@ -1,19 +1,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
+#include <stdbool.h>
+#include <unistd.h>
 #include "dzielenie.h"
 #include "pliki.h"
-void dfs(int wierzcholek, int *odwiedzone, int n, int **graf)
+
+void print_macierz(int **macierz, int rozmiar)
 {
-    odwiedzone[wierzcholek] = 1;
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < rozmiar; i++)
     {
-        if (graf[wierzcholek][i] == 1 && odwiedzone[i] == 0)
-        { // Jeśli jest krawędź i wierzchołek jeszcze nie został odwiedzona
-            dfs(i, odwiedzone, n, graf);
+        for (int j = 0; j < rozmiar; j++)
+        {
+            printf("%d ", macierz[i][j]);
         }
+        printf("\n");
     }
 }
+
 int policz_polaczone_wierzcholki(int start, int n, int **graf)
 {
     int *odwiedzone = (int *)calloc(n, sizeof(int));
@@ -45,79 +50,135 @@ int policz_graf(int n, int **graf)
     }
     return licznik;
 }
-void przetwarzanie_grafu(FILE *plik, int ***graf, int *n)
-{
-    char linia[1024];
-    int rozmiar = 0;
-    /*1.  Trzeba ogarnąć ile wierszy ma graf podany w pliku
-        Liczba wierszy powinna się równać liczbie wierzchołków w grafie
-        Przyjmuje że właśnie w pliku będą nam dawać macierz sąsiadów
-        Na isodzie napisali coś takiego...
-        Graf do podziału zostanie przekazany w formacie tekstowym - opis pojawi się poniżej.
+// void przetwarzanie_grafu(FILE *plik, int ***graf, int *n)
+// {
+//     char linia[1024];
+//     int rozmiar = 0;
+//     /*1.  Trzeba ogarnąć ile wierszy ma graf podany w pliku
+//         Liczba wierszy powinna się równać liczbie wierzchołków w grafie
+//         Przyjmuje że właśnie w pliku będą nam dawać macierz sąsiadów
+//         Na isodzie napisali coś takiego...
+//         Graf do podziału zostanie przekazany w formacie tekstowym - opis pojawi się poniżej.
 
-    2.  Wczytywanie wartości z pliku do macierzy
-    */
+//     2.  Wczytywanie wartości z pliku do macierzy
+//     */
 
-    // 1.
-    while (fgets(linia, sizeof(linia), plik))
-    {
-        rozmiar++;
-    }
-    rewind(plik);
-    *n = rozmiar;
-    printf("Rozmiar = %d \n", rozmiar);
-    *graf = (int **)calloc(rozmiar, sizeof(int *));
+//     // 1.
+//     while (fgets(linia, sizeof(linia), plik))
+//     {
+//         rozmiar++;
+//     }
+//     rewind(plik);
+//     *n = rozmiar;
+//     printf("Rozmiar = %d \n", rozmiar);
 
-    for (int i = 0; i < rozmiar; i++)
-    {
-        (*graf)[i] = (int *)calloc(rozmiar, sizeof(int));
-    }
-    // 2.
-    for (int i = 0; i < rozmiar; i++)
-    {
-        for (int j = 0; j < rozmiar; j++)
-        {
-            if (fscanf(plik, "%d", &(*graf)[i][j]) != 1)
-            {
-                printf("Wystapil blad w odczytywaniu pliku do grafu!\n");
-                return;
-            }
-        }
-    }
-}
 
+//     *graf = (int **)calloc(rozmiar, sizeof(int *));
+
+//     for (int i = 0; i < rozmiar; i++)
+//     {
+//         (*graf)[i] = (int *)calloc(rozmiar, sizeof(int));
+//     }
+//     // 2.
+//     for (int i = 0; i < rozmiar; i++)
+//     {
+//         for (int j = 0; j < rozmiar; j++)
+//         {
+//             if (fscanf(plik, "%d", &(*graf)[i][j]) != 1)
+//             {
+//                 printf("Wystapil blad w odczytywaniu pliku do grafu!\n");
+//                 return;
+//             }
+//         }
+//     }
+// }
 int main(int argc, char *argv[])
 {
-    char nazwa_pliku[30];
-    int liczba_wierzcholkow = 0;
-    int margines_procentowy;
-    int liczba_subgrafow;
-    int liczba_przeciec = 1;
-    if (argc < 3)
-    {
-        printf("Nie podano prawidlowych argumentow!\n");
-        return 1;
+    // domyslne parametry
+    char *input_plik = NULL;
+    char *output_plik = NULL;
+    int margines_procentowy = 10;
+    int docelowa_liczba_podgrafow = 2;
+    int czy_terminal=0;
+    int czy_binarny=0;
+
+    int opt; 
+    while ((opt = getopt(argc, argv, "n:m:o:tb")) != -1)  //n: to oczekujemy czegos po n, jak nie ma dwukropka to niczego
+    { 
+        switch(opt) {
+            case 'n':
+                docelowa_liczba_podgrafow = atoi(optarg);
+                break;
+            case 'm':
+                margines_procentowy = atoi(optarg);
+                break;
+            case 'o':
+                output_plik = strdup(optarg);
+                break;
+            case 't':
+                czy_terminal = 1;
+                break;
+            case 'b':
+                czy_binarny = 1;
+                break;
+            default:
+                fprintf(stderr, "Nieznany argument: %c\n", optopt);
+                exit(EXIT_FAILURE);
+                break;
+        }
     }
-    if (argc >= 3)
-    {
-        liczba_przeciec = atoi(argv[3]);
+    if (optind >= argc) {
+        fprintf(stderr, "Nie podano pliku wejsciowego!\n");
+        exit(EXIT_FAILURE);
     }
-    strcpy(nazwa_pliku, argv[1]);
-    FILE *plik = fopen(nazwa_pliku, "r");
+    // domyślny plik wyjściowy jeśli nie ma -t ani -o
+    if (!czy_terminal && output_plik == NULL) {
+        output_plik = strdup("wynik.txt");
+    }
+    
+
+    // Otwieranie pliku wyjściowego
+    FILE *output = czy_binarny==1?fopen(output_plik, "wb"):fopen(output_plik, "w");
+    if (output == NULL) {
+        perror("Blad przy otwieraniu pliku wyjsciowego");
+        exit(EXIT_FAILURE);
+    }
+
+    input_plik= argv[optind];
+    FILE *plik = fopen(input_plik, "r");
+    if (plik == NULL) {
+        perror("Blad przy otwieraniu pliku wejsciowego");
+        exit(EXIT_FAILURE);
+    }
+    
+
+    int liczba_wierzcholkow;
     int **graf = NULL;
-    margines_procentowy = atoi(argv[2]);
-
+    
     przetwarzanie_grafu(plik, &graf, &liczba_wierzcholkow);
+    //zbuduj_macierz_sasiedztwa(plik, graf, liczba_wierzcholkow);
     fclose(plik);
-    wypisz_macierz_sasiedztwa(graf, liczba_wierzcholkow);
 
-    liczba_subgrafow = policz_graf(8, graf);
+    // Wyświetlenie informacji początkowych
+    printf("\nWczytany graf (%d wierzcholkow):\n", liczba_wierzcholkow);
+    //print_macierz(graf, liczba_wierzcholkow);
 
-    printf("Liczba oddzielnych grafow wynosi %d\n", liczba_subgrafow); // Działa bez zarzutu bo jest wierzchołek 0 który nie jest z niczym połączony
-    printf("Liczba wierzcholkow w grafie wynosi %d\n", liczba_wierzcholkow);
-    printf("Margines procentowy wynosi %d\n", margines_procentowy);
-    printf("Liczba przeciec wynosi %d\n", liczba_przeciec);
-    dzielenie_grafu(graf, liczba_wierzcholkow, margines_procentowy, liczba_przeciec);
+    printf("\nPoczatkowa liczba spojnych skladowych: %d\n", policz_graf(liczba_wierzcholkow, graf));
+    printf("Docelowa liczba podgrafow: %d\n", docelowa_liczba_podgrafow);
+    printf("Dopuszczalny margines procentowy: %d%%\n", margines_procentowy);
 
+    // Dzielenie grafu
+    dzielenie_grafu(graf, liczba_wierzcholkow, margines_procentowy, docelowa_liczba_podgrafow,output);
+
+    // Zwolnienie pamięci
+    for (int i = 0; i < liczba_wierzcholkow; i++)
+    {
+        free(graf[i]);
+    }
+    free(graf);
+    if (output_plik) {
+        free(output_plik);
+    }
+   
     return 0;
 }
