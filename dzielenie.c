@@ -42,20 +42,37 @@ int czy_podgraf_spojny(int **graf, Podgraf *p, int n) {
     return 1;
 }
 
-void wypisz_przeciete_krawedzie(Krawedz *krawedzie, int liczba_krawedzi, FILE *output) {
+void wypisz_przeciete_krawedzie(Krawedz *krawedzie, int liczba_krawedzi, FILE *output, int czy_binarny) {
     printf("\nPrzeciete krawedzie:\n");
-    fprintf(output, "\nPrzeciete krawedzie:\n");
     
     if (liczba_krawedzi == 0) {
         printf("Brak krawedzi do przeciecia\n");
-        fprintf(output, "Brak krawedzi do przeciecia\n");
+        if (output) {
+            if (czy_binarny) {
+                fwrite(&liczba_krawedzi, sizeof(int), 1, output);
+            } else {
+                fprintf(output, "Brak krawedzi do przeciecia\n");
+            }
+        }
     } else {
         for (int i = 0; i < liczba_krawedzi; i++) {
             printf("%d -- %d\n", krawedzie[i].u, krawedzie[i].v);
-            fprintf(output, "%d -- %d\n", krawedzie[i].u, krawedzie[i].v);
+            if (output) {
+                if (czy_binarny) {
+                    fwrite(&krawedzie[i], sizeof(Krawedz), 1, output);
+                } else {
+                    fprintf(output, "%d -- %d\n", krawedzie[i].u, krawedzie[i].v);
+                }
+            }
         }
         printf("Lacznie przecieto %d krawedzi\n", liczba_krawedzi);
-        fprintf(output, "Lacznie przecieto %d krawedzi\n", liczba_krawedzi);
+        if (output) {
+            if (czy_binarny) {
+                fwrite(&liczba_krawedzi, sizeof(int), 1, output);
+            } else {
+                fprintf(output, "Lacznie przecieto %d krawedzi\n", liczba_krawedzi);
+            }
+        }
     }
 }
 
@@ -113,7 +130,7 @@ void zwolnij_graf(int **graf, int n) {
     free(graf);
 }
 
-int podziel_podgraf(int **graf, Podgraf *rodzic, Podgraf *dziecko, int n, int max_margines, FILE *output) {
+int podziel_podgraf(int **graf, Podgraf *rodzic, Podgraf *dziecko, int n, int max_margines, FILE *output, int czy_binarny) {
     if (rodzic->rozmiar < 2) {
         return 0; // Cannot split a subgraph with fewer than 2 vertices
     }
@@ -204,7 +221,7 @@ int podziel_podgraf(int **graf, Podgraf *rodzic, Podgraf *dziecko, int n, int ma
                 double margines = oblicz_margines(temp_rodzic.rozmiar, dziecko->rozmiar);
                 if (margines <= max_margines) {
                     // Valid split found, report and apply edge cuts
-                    wypisz_przeciete_krawedzie(krawedzie, liczba_krawedzi, output);
+                    wypisz_przeciete_krawedzie(krawedzie, liczba_krawedzi, output, czy_binarny);
                     for (int j = 0; j < dziecko->rozmiar; j++) {
                         for (int k = 0; k < temp_rodzic.rozmiar; k++) {
                             int u = dziecko->wierzcholki[j];
@@ -295,7 +312,7 @@ void inicjalizuj_poczatkowe_podgrafy(int **graf, int n, Podgraf *podgrafy, int *
     free(odwiedzone);
 }
 
-void podziel_graf_iteracyjnie(int **graf, int n, int liczba_podzielen, int max_margines, FILE *output) {
+void podziel_graf_iteracyjnie(int **graf, int n, int liczba_podzielen, int max_margines, FILE *output, int czy_binarny) {
     int max_possible_subgraphs = n;
     Podgraf *podgrafy = (Podgraf *)calloc(max_possible_subgraphs, sizeof(Podgraf));
     if (!podgrafy) {
@@ -341,7 +358,7 @@ void podziel_graf_iteracyjnie(int **graf, int n, int liczba_podzielen, int max_m
         Podgraf *dziecko = &podgrafy[aktualna_liczba_podgrafow];
         
         // Attempt to split the subgraph
-        if (!podziel_podgraf(graf, rodzic, dziecko, n, max_margines, output)) {
+        if (!podziel_podgraf(graf, rodzic, dziecko, n, max_margines, output, czy_binarny)) {
             printf("Nie udalo sie wykonac podzialu podgrafu %d - brak spojnego podzialu\n", najwiekszy_idx);
             fprintf(output, "Nie udalo sie wykonac podzialu podgrafu %d - brak spojnego podzialu\n", najwiekszy_idx);
             cannot_split[najwiekszy_idx] = 1; // Mark as unsplittable
@@ -389,11 +406,12 @@ void podziel_graf_iteracyjnie(int **graf, int n, int liczba_podzielen, int max_m
     free(cannot_split);
 }
 
-void dzielenie_grafu(int **graf, int n, int margines_procentowy, int liczba_podzielen, FILE *output) {
+void dzielenie_grafu(int **graf, int n, int margines_procentowy, int liczba_podzielen, FILE *output, int czy_binarny) {
     printf("\nRozpoczecie dzielenia grafu na %d podzialow z marginesem %d%%\n", 
            liczba_podzielen, margines_procentowy);
-    fprintf(output, "\nRozpoczecie dzielenia grafu na %d podzialow z marginesem %d%%\n", 
-           liczba_podzielen, margines_procentowy);
-    
-    podziel_graf_iteracyjnie(graf, n, liczba_podzielen, margines_procentowy, output);
+    if (!czy_binarny) {
+        fprintf(output, "\nRozpoczecie dzielenia grafu na %d podzialow z marginesem %d%%\n", 
+                liczba_podzielen, margines_procentowy);
+    }
+    podziel_graf_iteracyjnie(graf, n, liczba_podzielen, margines_procentowy, output, czy_binarny);
 }

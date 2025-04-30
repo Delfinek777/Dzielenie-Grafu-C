@@ -133,12 +133,18 @@ int main(int argc, char *argv[])
     }
     // domyślny plik wyjściowy jeśli nie ma -t ani -o
     if (!czy_terminal && output_plik == NULL) {
-        output_plik = strdup("wynik.txt");
+        output_plik = strdup(czy_binarny ? "wynik.bin" : "wynik.txt");
     }
     
 
     // Otwieranie pliku wyjściowego
-    FILE *output = czy_binarny==1?fopen(output_plik, "wb"):fopen(output_plik, "w");
+    FILE *output = NULL;
+    if (czy_terminal) {
+        output = stdout;
+    } else if (output_plik) {
+        output = fopen(output_plik, czy_binarny ? "wb" : "w");
+    }
+
     if (output == NULL) {
         perror("Blad przy otwieraniu pliku wyjsciowego");
         exit(EXIT_FAILURE);
@@ -168,7 +174,7 @@ int main(int argc, char *argv[])
     printf("Dopuszczalny margines procentowy: %d%%\n", margines_procentowy);
 
     // Dzielenie grafu
-    dzielenie_grafu(graf, liczba_wierzcholkow, margines_procentowy, docelowa_liczba_podgrafow,output);
+    dzielenie_grafu(graf, liczba_wierzcholkow, margines_procentowy, docelowa_liczba_podgrafow, output, czy_binarny);
 
     // Zwolnienie pamięci
     for (int i = 0; i < liczba_wierzcholkow; i++)
